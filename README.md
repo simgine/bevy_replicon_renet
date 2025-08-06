@@ -3,9 +3,9 @@
 [![crates.io](https://img.shields.io/crates/v/bevy_replicon_renet)](https://crates.io/crates/bevy_replicon_renet)
 [![docs.rs](https://docs.rs/bevy_replicon_renet/badge.svg)](https://docs.rs/bevy_replicon_renet)
 [![license](https://img.shields.io/crates/l/bevy_replicon_renet)](#license)
-[![codecov](https://codecov.io/gh/projectharmonia/bevy_replicon_renet/graph/badge.svg?token=ZrlFB8wBpO)](https://codecov.io/gh/projectharmonia/bevy_replicon_renet)
+[![codecov](https://codecov.io/gh/simgine/bevy_replicon_renet/graph/badge.svg?token=ZrlFB8wBpO)](https://codecov.io/gh/simgine/bevy_replicon_renet)
 
-An integration of [`bevy_renet`](https://github.com/lucaspoffo/renet/tree/master/bevy_renet) as a messaging backend for [`bevy_replicon`](https://github.com/projectharmonia/bevy_replicon).
+An integration of [`bevy_renet`](https://github.com/lucaspoffo/renet/tree/master/bevy_renet) as a messaging backend for [`bevy_replicon`](https://github.com/simgine/bevy_replicon).
 
 ## Getting Started
 
