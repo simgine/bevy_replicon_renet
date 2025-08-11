@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update to `bevy_replicon` 0.34.
+- Update to `bevy_renet` 2.0.0.
 - Trigger disconnect when entities with `ConnectedClient` are despawned.
 
 ## [0.9.0] - 2025-03-24
