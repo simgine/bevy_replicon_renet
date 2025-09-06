@@ -55,35 +55,32 @@ fn set_disconnected(mut state: ResMut<NextState<ClientState>>) {
 
 fn receive_packets(
     channels: Res<RepliconChannels>,
-    mut renet_client: ResMut<RenetClient>,
-    mut replicon_client: ResMut<RepliconClient>,
+    mut client: ResMut<RenetClient>,
+    mut messages: ResMut<ClientMessages>,
+    mut stats: ResMut<ClientStats>,
 ) {
     for channel_id in 0..channels.server_channels().len() as u8 {
-        while let Some(message) = renet_client.receive_message(channel_id) {
+        while let Some(message) = client.receive_message(channel_id) {
             trace!(
                 "forwarding {} received bytes over channel {channel_id}",
                 message.len()
             );
-            replicon_client.insert_received(channel_id, message);
+            messages.insert_received(channel_id, message);
         }
     }
 
-    let stats = replicon_client.stats_mut();
-    stats.rtt = renet_client.rtt();
-    stats.packet_loss = renet_client.packet_loss();
-    stats.sent_bps = renet_client.bytes_sent_per_sec();
-    stats.received_bps = renet_client.bytes_received_per_sec();
+    stats.rtt = client.rtt();
+    stats.packet_loss = client.packet_loss();
+    stats.sent_bps = client.bytes_sent_per_sec();
+    stats.received_bps = client.bytes_received_per_sec();
 }
 
-fn send_packets(
-    mut renet_client: ResMut<RenetClient>,
-    mut replicon_client: ResMut<RepliconClient>,
-) {
-    for (channel_id, message) in replicon_client.drain_sent() {
+fn send_packets(mut client: ResMut<RenetClient>, mut messages: ResMut<ClientMessages>) {
+    for (channel_id, message) in messages.drain_sent() {
         trace!(
             "forwarding {} sent bytes over channel {channel_id}",
             message.len()
         );
-        renet_client.send_message(channel_id as u8, message)
+        client.send_message(channel_id as u8, message)
     }
 }
