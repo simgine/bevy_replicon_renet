@@ -19,12 +19,12 @@ So you don't need to include `bevy_renet` or `renet` in your `Cargo.toml`.
 Add [`RepliconRenetPlugins`] along with [`RepliconPlugins`]:
 
 ```
-use bevy::prelude::*;
+use bevy::{prelude::*, state::app::StatesPlugin};
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet::RepliconRenetPlugins;
 
 let mut app = App::new();
-app.add_plugins((MinimalPlugins, RepliconPlugins, RepliconRenetPlugins));
+app.add_plugins((MinimalPlugins, StatesPlugin, RepliconPlugins, RepliconRenetPlugins));
 ```
 
 Similar to Replicon, we provide `client` and `server` features. These automatically enable the corresponding
