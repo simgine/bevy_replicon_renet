@@ -93,23 +93,23 @@ fn process_server_events(
 
 fn receive_packets(
     channels: Res<RepliconChannels>,
-    mut renet_server: ResMut<RenetServer>,
-    mut replicon_server: ResMut<RepliconServer>,
-    mut clients: Query<(Entity, &NetworkId, &mut NetworkStats)>,
+    mut server: ResMut<RenetServer>,
+    mut messages: ResMut<ServerMessages>,
+    mut clients: Query<(Entity, &NetworkId, &mut ClientStats)>,
 ) {
     for (client_entity, network_id, mut stats) in &mut clients {
         for channel_id in 0..channels.client_channels().len() as u8 {
-            while let Some(message) = renet_server.receive_message(network_id.get(), channel_id) {
+            while let Some(message) = server.receive_message(network_id.get(), channel_id) {
                 trace!(
                     "forwarding {} received bytes over channel {channel_id}",
                     message.len()
                 );
-                replicon_server.insert_received(client_entity, channel_id, message);
+                messages.insert_received(client_entity, channel_id, message);
             }
         }
 
         // Renet events reading runs in parallel, so the client might have been disconnected.
-        if let Ok(info) = renet_server.network_info(network_id.get()) {
+        if let Ok(info) = server.network_info(network_id.get()) {
             stats.rtt = info.rtt;
             stats.packet_loss = info.packet_loss;
             stats.sent_bps = info.bytes_sent_per_second;
@@ -119,11 +119,11 @@ fn receive_packets(
 }
 
 fn send_packets(
-    mut renet_server: ResMut<RenetServer>,
-    mut replicon_server: ResMut<RepliconServer>,
+    mut server: ResMut<RenetServer>,
+    mut messages: ResMut<ServerMessages>,
     clients: Query<&NetworkId>,
 ) {
-    for (client_entity, channel_id, message) in replicon_server.drain_sent() {
+    for (client_entity, channel_id, message) in messages.drain_sent() {
         trace!(
             "forwarding {} sent bytes over channel {channel_id}",
             message.len()
@@ -131,7 +131,7 @@ fn send_packets(
         let network_id = clients
             .get(client_entity)
             .expect("messages should be sent only to connected clients");
-        renet_server.send_message(network_id.get(), channel_id as u8, message)
+        server.send_message(network_id.get(), channel_id as u8, message)
     }
 }
 
