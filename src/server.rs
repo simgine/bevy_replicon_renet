@@ -12,10 +12,10 @@ use bevy_replicon::{
     shared::backend::connected_client::{NetworkId, NetworkIdMap},
 };
 
-/// Adds renet as server messaging backend.
+/// Adds Renet as the server messaging backend.
 ///
-/// Initializes [`RenetServerPlugin`], systems that pass data between [`RenetServer`]
-/// and [`RepliconServer`] and translates renet's server events into replicon's.
+/// Initializes [`RenetServerPlugin`] and the systems that pass data between [`RenetServer`]
+/// and [`ServerMessages`], update the [`ServerState`], and translate Renet's server events into Replicon's.
 pub struct RepliconRenetServerPlugin;
 
 impl Plugin for RepliconRenetServerPlugin {
