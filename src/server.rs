@@ -140,11 +140,8 @@ fn disconnect_by_request(
     mut disconnect_events: EventReader<DisconnectRequest>,
 ) {
     for event in disconnect_events.read() {
-        debug!(
-            "despawning client `{}` by disconnect request",
-            event.client_entity
-        );
-        commands.entity(event.client_entity).despawn();
+        debug!("despawning client `{}` by disconnect request", event.client);
+        commands.entity(event.client).despawn();
     }
 }
 
