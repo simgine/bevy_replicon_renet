@@ -176,7 +176,7 @@ pub trait RenetChannelsExt {
     ///
     /// ```
     /// # use bevy::prelude::*;
-    /// # use bevy_replicon::{prelude::*, shared::backend::replicon_channels::ServerChannel};
+    /// # use bevy_replicon::{prelude::*, shared::backend::channels::ServerChannel};
     /// # use bevy_replicon_renet::RenetChannelsExt;
     /// # let channels = RepliconChannels::default();
     /// let mut server_configs = channels.server_configs();
