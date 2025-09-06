@@ -6,10 +6,10 @@ use bevy_renet::steam::SteamClientPlugin;
 use bevy_renet::{self, RenetClientPlugin, RenetReceive, RenetSend, renet::RenetClient};
 use bevy_replicon::prelude::*;
 
-/// Adds renet as client messaging backend.
+/// Adds Renet as the client messaging backend.
 ///
-/// Initializes [`RenetClientPlugin`] and systems that pass data between
-/// [`RenetClient`] and [`RepliconClient`].
+/// Initializes [`RenetClientPlugin`] and the systems that pass data between [`RenetClient`]
+/// and [`ClientMessages`], and update the [`ClientState`].
 pub struct RepliconRenetClientPlugin;
 
 impl Plugin for RepliconRenetClientPlugin {

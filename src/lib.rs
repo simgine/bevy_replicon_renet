@@ -30,7 +30,7 @@ app.add_plugins((MinimalPlugins, StatesPlugin, RepliconPlugins, RepliconRenetPlu
 Similar to Replicon, we provide `client` and `server` features. These automatically enable the corresponding
 features in `bevy_replicon`.
 
-The plugins in [`RepliconRenetPlugins`] automatically include the `renet` plugins, so you don't need to add
+The plugins in [`RepliconRenetPlugins`] automatically include the Renet plugins, so you don't need to add
 them manually. If the `renet_transport` feature is enabled, the netcode plugins will also be added automatically.
 
 ## Server and client creation
@@ -52,7 +52,7 @@ See the Replicon's quick start guide for more details.
 </div>
 
 The only Replicon-specific part is channels. You need to get them from the [`RepliconChannels`] resource.
-This crate provides the [`RenetChannelsExt`] extension trait to conveniently create renet channels from it:
+This crate provides the [`RenetChannelsExt`] extension trait to conveniently create Renet channels from it:
 
 ```
 use bevy::prelude::*;
@@ -78,16 +78,13 @@ Channels need to be obtained only **after** registering all replication componen
 
 </div>
 
-## Replicon conditions
+## Replicon states
 
-The crate updates the running state of [`RepliconServer`] and connection state of [`RepliconClient`]
-based on the states of [`RenetServer`](renet::RenetServer) and [`RenetClient`](renet::RenetServer)
-in [`PreUpdate`].
+The crate updates the [`ServerState`] and [`ClientState`] based on the states of [`RenetServer`](renet::RenetServer)
+and [`RenetClient`](renet::RenetServer) in [`PreUpdate`].
 
-This means that [Replicon conditions](bevy_replicon::shared::common_conditions) won't work in schedules
-like [`Startup`]. As a workaround, you can directly check if renet's resources are present. This may be resolved
-in the future once we have [observers for resources](https://github.com/bevyengine/bevy/issues/12231)
-to immediately react to changes.
+This means that states won't be updated in schedules like [`Startup`].
+As a workaround, you can directly check if Renet's resources are present.
 */
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
