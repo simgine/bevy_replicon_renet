@@ -2,22 +2,28 @@
 //! Both the server and clients can toggle its state using remote triggers,
 //! and the server replicates the updated state back to all clients.
 
-use std::net::{IpAddr, Ipv4Addr};
+use std::{
+    net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket},
+    time::SystemTime,
+};
 
 use bevy::prelude::*;
 use bevy_replicon::prelude::*;
-use bevy_replicon_example_backend::{ExampleClient, ExampleServer, RepliconExampleBackendPlugins};
+use bevy_replicon_renet::{
+    RenetChannelsExt, RepliconRenetPlugins,
+    netcode::{
+        ClientAuthentication, NetcodeClientTransport, NetcodeServerTransport, ServerAuthentication,
+        ServerConfig,
+    },
+    renet::{ConnectionConfig, RenetClient, RenetServer},
+};
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
 fn main() {
     App::new()
         .init_resource::<Cli>() // Parse CLI before creating window.
-        .add_plugins((
-            DefaultPlugins,
-            RepliconPlugins,
-            RepliconExampleBackendPlugins,
-        ))
+        .add_plugins((DefaultPlugins, RepliconPlugins, RepliconRenetPlugins))
         .replicate::<UiRoot>()
         .replicate::<ToggleButton>()
         .replicate_filtered::<ChildOf, With<ToggleButton>>() // Replicate parent only for `ToggleButton`.
@@ -30,7 +36,8 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
+fn setup(mut commands: Commands, cli: Res<Cli>, channels: Res<RepliconChannels>) -> Result<()> {
+    const PROTOCOL_ID: u64 = 0;
     commands.spawn(Camera2d);
 
     match *cli {
@@ -42,8 +49,28 @@ fn setup(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
             info!("starting server at port {port}");
 
             // Backend initialization
-            let server = ExampleServer::new(port)?;
+            let server_channels_config = channels.server_configs();
+            let client_channels_config = channels.client_configs();
+
+            let server = RenetServer::new(ConnectionConfig {
+                server_channels_config,
+                client_channels_config,
+                ..Default::default()
+            });
+
+            let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+            let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, port))?;
+            let server_config = ServerConfig {
+                current_time,
+                max_clients: 1,
+                protocol_id: PROTOCOL_ID,
+                authentication: ServerAuthentication::Unsecure,
+                public_addresses: Default::default(),
+            };
+            let transport = NetcodeServerTransport::new(server_config, socket)?;
+
             commands.insert_resource(server);
+            commands.insert_resource(transport);
 
             commands.spawn((UiRoot, children![ToggleButton(false)]));
             commands.spawn(Text::new("Server"));
@@ -52,9 +79,30 @@ fn setup(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
             info!("connecting to {ip}:{port}");
 
             // Backend initialization
-            let client = ExampleClient::new((ip, port))?;
-            let addr = client.local_addr()?;
+            let server_channels_config = channels.server_configs();
+            let client_channels_config = channels.client_configs();
+
+            let client = RenetClient::new(ConnectionConfig {
+                server_channels_config,
+                client_channels_config,
+                ..Default::default()
+            });
+
+            let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+            let client_id = current_time.as_millis() as u64;
+            let server_addr = SocketAddr::new(ip, port);
+            let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0))?;
+            let addr = socket.local_addr()?;
+            let authentication = ClientAuthentication::Unsecure {
+                client_id,
+                protocol_id: PROTOCOL_ID,
+                server_addr,
+                user_data: None,
+            };
+            let transport = NetcodeClientTransport::new(current_time, authentication, socket)?;
+
             commands.insert_resource(client);
+            commands.insert_resource(transport);
 
             commands.spawn(Text(format!("Client: {addr}")));
         }

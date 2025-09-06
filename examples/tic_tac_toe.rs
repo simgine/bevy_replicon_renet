@@ -3,7 +3,8 @@
 
 use std::{
     fmt::{self, Formatter},
-    net::{IpAddr, Ipv4Addr},
+    net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket},
+    time::SystemTime,
 };
 
 use bevy::{
@@ -11,7 +12,14 @@ use bevy::{
     prelude::*,
 };
 use bevy_replicon::prelude::*;
-use bevy_replicon_example_backend::{ExampleClient, ExampleServer, RepliconExampleBackendPlugins};
+use bevy_replicon_renet::{
+    RenetChannelsExt, RepliconRenetPlugins,
+    netcode::{
+        ClientAuthentication, NetcodeClientTransport, NetcodeServerTransport, ServerAuthentication,
+        ServerConfig,
+    },
+    renet::{ConnectionConfig, RenetClient, RenetServer},
+};
 use clap::{Parser, ValueEnum};
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +36,7 @@ fn main() {
                 ..Default::default()
             }),
             RepliconPlugins,
-            RepliconExampleBackendPlugins,
+            RepliconRenetPlugins,
         ))
         .init_state::<GameState>()
         .init_resource::<SymbolFont>()
@@ -79,7 +87,9 @@ const LINE_THICKNESS: f32 = 10.0;
 const BUTTON_SIZE: f32 = CELL_SIZE / 1.2;
 const BUTTON_MARGIN: f32 = (CELL_SIZE + LINE_THICKNESS - BUTTON_SIZE) / 2.0;
 
-fn read_cli(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
+fn read_cli(mut commands: Commands, cli: Res<Cli>, channels: Res<RepliconChannels>) -> Result<()> {
+    const PROTOCOL_ID: u64 = 0;
+
     match *cli {
         Cli::Hotseat => {
             info!("starting hotseat");
@@ -92,8 +102,28 @@ fn read_cli(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
             info!("starting server as {symbol} at port {port}");
 
             // Backend initialization
-            let server = ExampleServer::new(port)?;
+            let server_channels_config = channels.server_configs();
+            let client_channels_config = channels.client_configs();
+
+            let server = RenetServer::new(ConnectionConfig {
+                server_channels_config,
+                client_channels_config,
+                ..Default::default()
+            });
+
+            let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+            let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, port))?;
+            let server_config = ServerConfig {
+                current_time,
+                max_clients: 1,
+                protocol_id: PROTOCOL_ID,
+                authentication: ServerAuthentication::Unsecure,
+                public_addresses: Default::default(),
+            };
+            let transport = NetcodeServerTransport::new(server_config, socket)?;
+
             commands.insert_resource(server);
+            commands.insert_resource(transport);
 
             commands.spawn((LocalPlayer, symbol));
         }
@@ -101,8 +131,29 @@ fn read_cli(mut commands: Commands, cli: Res<Cli>) -> Result<()> {
             info!("connecting to {ip}:{port}");
 
             // Backend initialization
-            let client = ExampleClient::new((ip, port))?;
+            let server_channels_config = channels.server_configs();
+            let client_channels_config = channels.client_configs();
+
+            let client = RenetClient::new(ConnectionConfig {
+                server_channels_config,
+                client_channels_config,
+                ..Default::default()
+            });
+
+            let current_time = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+            let client_id = current_time.as_millis() as u64;
+            let server_addr = SocketAddr::new(ip, port);
+            let socket = UdpSocket::bind((Ipv4Addr::UNSPECIFIED, 0))?;
+            let authentication = ClientAuthentication::Unsecure {
+                client_id,
+                protocol_id: PROTOCOL_ID,
+                server_addr,
+                user_data: None,
+            };
+            let transport = NetcodeClientTransport::new(current_time, authentication, socket)?;
+
             commands.insert_resource(client);
+            commands.insert_resource(transport);
 
             commands.spawn((LocalPlayer, ClientPlayer));
         }
@@ -345,8 +396,8 @@ fn disconnect_by_server(mut commands: Commands) {
 
 /// Closes all sockets.
 fn stop_networking(mut commands: Commands) {
-    commands.remove_resource::<ExampleServer>();
-    commands.remove_resource::<ExampleClient>();
+    commands.remove_resource::<RenetServer>();
+    commands.remove_resource::<RenetClient>();
 }
 
 /// Checks the winner and advances the turn.
