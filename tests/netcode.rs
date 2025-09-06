@@ -3,7 +3,7 @@ use std::{
     time::SystemTime,
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, state::app::StatesPlugin};
 use bevy_renet::{
     netcode::{
         ClientAuthentication, NetcodeClientTransport, NetcodeServerTransport, ServerAuthentication,
@@ -23,6 +23,7 @@ fn connect_disconnect() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()
@@ -34,7 +35,8 @@ fn connect_disconnect() {
 
     setup(&mut server_app, &mut client_app);
 
-    assert!(server_app.world().resource::<RepliconServer>().is_running());
+    let server_state = server_app.world().resource::<State<ServerState>>();
+    assert_eq!(*server_state, ServerState::Running);
 
     let renet_server = server_app.world().resource::<RenetServer>();
     assert_eq!(renet_server.connected_clients(), 1);
@@ -44,8 +46,8 @@ fn connect_disconnect() {
         .query::<(&ConnectedClient, &AuthorizedClient)>();
     assert_eq!(clients.iter(server_app.world()).len(), 1);
 
-    let replicon_client = client_app.world().resource::<RepliconClient>();
-    assert!(replicon_client.is_connected());
+    let client_state = client_app.world().resource::<State<ClientState>>();
+    assert_eq!(*client_state, ClientState::Connected);
 
     let mut renet_client = client_app.world_mut().resource_mut::<RenetClient>();
     assert!(renet_client.is_connected());
@@ -60,8 +62,8 @@ fn connect_disconnect() {
     let renet_server = server_app.world().resource::<RenetServer>();
     assert_eq!(renet_server.connected_clients(), 0);
 
-    let replicon_client = client_app.world().resource::<RepliconClient>();
-    assert!(replicon_client.is_disconnected());
+    let client_state = client_app.world().resource::<State<ClientState>>();
+    assert_eq!(*client_state, ClientState::Disconnected);
 }
 
 #[test]
@@ -71,6 +73,7 @@ fn disconnect_request() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()
@@ -111,8 +114,8 @@ fn disconnect_request() {
 
     client_app.update();
 
-    let client = client_app.world().resource::<RepliconClient>();
-    assert!(client.is_disconnected());
+    let client_state = client_app.world().resource::<State<ClientState>>();
+    assert_eq!(*client_state, ClientState::Disconnected);
 
     let events = client_app.world().resource::<Events<TestEvent>>();
     assert_eq!(events.len(), 1, "last event should be received");
@@ -132,6 +135,7 @@ fn server_stop() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()
@@ -160,12 +164,18 @@ fn server_stop() {
 
     let mut clients = server_app.world_mut().query::<&ConnectedClient>();
     assert_eq!(clients.iter(server_app.world()).len(), 0);
-    assert!(
-        server_app.world().resource::<RepliconServer>().is_running(),
+
+    let server_state = server_app.world().resource::<State<ServerState>>();
+    assert_eq!(
+        *server_state,
+        ServerState::Running,
         "requires resource removal"
     );
-    assert!(
-        client_app.world().resource::<RenetClient>().is_connected(),
+
+    let client_state = client_app.world().resource::<State<ClientState>>();
+    assert_eq!(
+        *client_state,
+        ClientState::Connected,
         "renet client disconnects only on the next frame"
     );
 
@@ -174,10 +184,11 @@ fn server_stop() {
     server_app.update();
     client_app.update();
 
-    assert!(!server_app.world().resource::<RepliconServer>().is_running());
+    let server_state = client_app.world().resource::<State<ServerState>>();
+    assert_eq!(*server_state, ServerState::Stopped);
 
-    let client = client_app.world().resource::<RepliconClient>();
-    assert!(client.is_disconnected());
+    let client_state = client_app.world().resource::<State<ClientState>>();
+    assert_eq!(*client_state, ClientState::Disconnected);
 
     let events = client_app.world().resource::<Events<TestEvent>>();
     assert!(events.is_empty(), "event after stop shouldn't be received");
@@ -197,6 +208,7 @@ fn replication() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()
@@ -224,6 +236,7 @@ fn server_event() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()
@@ -255,6 +268,7 @@ fn client_event() {
     for app in [&mut server_app, &mut client_app] {
         app.add_plugins((
             MinimalPlugins,
+            StatesPlugin,
             RepliconPlugins.set(ServerPlugin {
                 tick_policy: TickPolicy::EveryFrame,
                 ..Default::default()

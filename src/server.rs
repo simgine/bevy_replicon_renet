@@ -28,20 +28,18 @@ impl Plugin for RepliconRenetServerPlugin {
                 PreUpdate,
                 (
                     set_running.run_if(resource_added::<RenetServer>),
+                    set_stopped.run_if(resource_removed::<RenetServer>),
                     (receive_packets, process_server_events).run_if(resource_exists::<RenetServer>),
                 )
-                    .chain()
                     .in_set(ServerSet::ReceivePackets),
             )
             .add_systems(
                 PostUpdate,
                 (
-                    set_stopped
-                        .before(ServerSet::Send)
-                        .run_if(resource_removed::<RenetServer>),
                     send_packets
                         .in_set(ServerSet::SendPackets)
                         .run_if(resource_exists::<RenetServer>),
+                    // Run after sending to let clients receive messages before disconnecting.
                     disconnect_by_request.after(RenetSend),
                 ),
             );
@@ -53,12 +51,12 @@ impl Plugin for RepliconRenetServerPlugin {
     }
 }
 
-fn set_running(mut server: ResMut<RepliconServer>) {
-    server.set_running(true);
+fn set_running(mut state: ResMut<NextState<ServerState>>) {
+    state.set(ServerState::Running);
 }
 
-fn set_stopped(mut server: ResMut<RepliconServer>) {
-    server.set_running(false);
+fn set_stopped(mut state: ResMut<NextState<ServerState>>) {
+    state.set(ServerState::Stopped);
 }
 
 fn process_server_events(

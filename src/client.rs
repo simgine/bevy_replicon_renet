@@ -21,23 +21,17 @@ impl Plugin for RepliconRenetClientPlugin {
                 PreUpdate,
                 (
                     set_connected.run_if(bevy_renet::client_just_connected),
+                    set_connecting.run_if(resource_added::<RenetClient>),
+                    set_disconnected.run_if(bevy_renet::client_just_disconnected),
                     receive_packets.run_if(bevy_renet::client_connected),
                 )
-                    .chain()
                     .in_set(ClientSet::ReceivePackets),
             )
             .add_systems(
                 PostUpdate,
-                (
-                    (
-                        set_connecting.run_if(bevy_renet::client_connecting),
-                        set_disconnected.run_if(bevy_renet::client_just_disconnected),
-                    )
-                        .before(ClientSet::Send),
-                    send_packets
-                        .in_set(ClientSet::SendPackets)
-                        .run_if(bevy_renet::client_connected),
-                ),
+                send_packets
+                    .in_set(ClientSet::SendPackets)
+                    .run_if(bevy_renet::client_connected),
             );
 
         #[cfg(feature = "renet_netcode")]
@@ -47,18 +41,16 @@ impl Plugin for RepliconRenetClientPlugin {
     }
 }
 
-fn set_disconnected(mut client: ResMut<RepliconClient>) {
-    client.set_status(RepliconClientStatus::Disconnected);
+fn set_connecting(mut state: ResMut<NextState<ClientState>>) {
+    state.set(ClientState::Connecting);
 }
 
-fn set_connecting(mut client: ResMut<RepliconClient>) {
-    if client.status() != RepliconClientStatus::Connecting {
-        client.set_status(RepliconClientStatus::Connecting);
-    }
+fn set_connected(mut state: ResMut<NextState<ClientState>>) {
+    state.set(ClientState::Connected);
 }
 
-fn set_connected(mut client: ResMut<RepliconClient>) {
-    client.set_status(RepliconClientStatus::Connected);
+fn set_disconnected(mut state: ResMut<NextState<ClientState>>) {
+    state.set(ClientState::Disconnected);
 }
 
 fn receive_packets(
