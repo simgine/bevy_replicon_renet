@@ -21,8 +21,8 @@ pub struct RepliconRenetServerPlugin;
 impl Plugin for RepliconRenetServerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(RenetServerPlugin)
-            .configure_sets(PreUpdate, ServerSet::ReceivePackets.after(RenetReceive))
-            .configure_sets(PostUpdate, ServerSet::SendPackets.before(RenetSend))
+            .configure_sets(PreUpdate, ServerSystems::ReceivePackets.after(RenetReceive))
+            .configure_sets(PostUpdate, ServerSystems::SendPackets.before(RenetSend))
             .add_observer(disconnect_client)
             .add_systems(
                 PreUpdate,
@@ -31,13 +31,13 @@ impl Plugin for RepliconRenetServerPlugin {
                     set_stopped.run_if(resource_removed::<RenetServer>),
                     (receive_packets, process_server_events).run_if(resource_exists::<RenetServer>),
                 )
-                    .in_set(ServerSet::ReceivePackets),
+                    .in_set(ServerSystems::ReceivePackets),
             )
             .add_systems(
                 PostUpdate,
                 (
                     send_packets
-                        .in_set(ServerSet::SendPackets)
+                        .in_set(ServerSystems::SendPackets)
                         .run_if(resource_exists::<RenetServer>),
                     // Run after sending to let clients receive messages before disconnecting.
                     disconnect_by_request.after(RenetSend),
