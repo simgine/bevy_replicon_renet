@@ -15,8 +15,8 @@ pub struct RepliconRenetClientPlugin;
 impl Plugin for RepliconRenetClientPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(RenetClientPlugin)
-            .configure_sets(PreUpdate, ClientSet::ReceivePackets.after(RenetReceive))
-            .configure_sets(PostUpdate, ClientSet::SendPackets.before(RenetSend))
+            .configure_sets(PreUpdate, ClientSystems::ReceivePackets.after(RenetReceive))
+            .configure_sets(PostUpdate, ClientSystems::SendPackets.before(RenetSend))
             .add_systems(
                 PreUpdate,
                 (
@@ -25,12 +25,12 @@ impl Plugin for RepliconRenetClientPlugin {
                     set_disconnected.run_if(bevy_renet::client_just_disconnected),
                     receive_packets.run_if(bevy_renet::client_connected),
                 )
-                    .in_set(ClientSet::ReceivePackets),
+                    .in_set(ClientSystems::ReceivePackets),
             )
             .add_systems(
                 PostUpdate,
                 send_packets
-                    .in_set(ClientSet::SendPackets)
+                    .in_set(ClientSystems::SendPackets)
                     .run_if(bevy_renet::client_connected),
             );
 
