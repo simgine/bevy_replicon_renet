@@ -21,9 +21,9 @@ impl Plugin for RepliconRenetClientPlugin {
                 PreUpdate,
                 (
                     set_connecting.run_if(resource_added::<RenetClient>),
-                    set_connected
-                        .run_if(in_state(ClientState::Connecting))
-                        .run_if(bevy_renet::client_just_connected),
+                    set_connected.run_if(
+                        in_state(ClientState::Connecting).and(bevy_renet::client_just_connected),
+                    ),
                     set_disconnected.run_if(bevy_renet::client_just_disconnected),
                     receive_packets.run_if(bevy_renet::client_connected),
                 )
