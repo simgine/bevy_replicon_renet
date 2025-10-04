@@ -80,16 +80,16 @@ fn disconnect_request() {
             }),
             RepliconRenetPlugins,
         ))
-        .add_server_event::<TestEvent>(Channel::Ordered)
+        .add_server_message::<Test>(Channel::Ordered)
         .finish();
     }
 
     setup(&mut server_app, &mut client_app);
 
     server_app.world_mut().spawn(Replicated);
-    server_app.world_mut().send_event(ToClients {
+    server_app.world_mut().write_message(ToClients {
         mode: SendMode::Broadcast,
-        event: TestEvent,
+        message: Test,
     });
 
     let mut clients = server_app
@@ -98,7 +98,7 @@ fn disconnect_request() {
     let client = clients.single(server_app.world()).unwrap();
     server_app
         .world_mut()
-        .send_event(DisconnectRequest { client });
+        .write_message(DisconnectRequest { client });
 
     server_app.update();
 
@@ -117,8 +117,8 @@ fn disconnect_request() {
     let client_state = client_app.world().resource::<State<ClientState>>();
     assert_eq!(*client_state, ClientState::Disconnected);
 
-    let events = client_app.world().resource::<Events<TestEvent>>();
-    assert_eq!(events.len(), 1, "last event should be received");
+    let messages = client_app.world().resource::<Messages<Test>>();
+    assert_eq!(messages.len(), 1, "last message should be received");
 
     let mut replicated = client_app.world_mut().query::<&Replicated>();
     assert_eq!(
@@ -142,16 +142,16 @@ fn server_stop() {
             }),
             RepliconRenetPlugins,
         ))
-        .add_server_event::<TestEvent>(Channel::Ordered)
+        .add_server_message::<Test>(Channel::Ordered)
         .finish();
     }
 
     setup(&mut server_app, &mut client_app);
 
     server_app.world_mut().spawn(Replicated);
-    server_app.world_mut().send_event(ToClients {
+    server_app.world_mut().write_message(ToClients {
         mode: SendMode::Broadcast,
-        event: TestEvent,
+        message: Test,
     });
 
     // In renet, it's necessary to explicitly call disconnect before removing
@@ -190,8 +190,11 @@ fn server_stop() {
     let client_state = client_app.world().resource::<State<ClientState>>();
     assert_eq!(*client_state, ClientState::Disconnected);
 
-    let events = client_app.world().resource::<Events<TestEvent>>();
-    assert!(events.is_empty(), "event after stop shouldn't be received");
+    let messages = client_app.world().resource::<Messages<Test>>();
+    assert!(
+        messages.is_empty(),
+        "message after stop shouldn't be received"
+    );
 
     let mut replicated = client_app.world_mut().query::<&Replicated>();
     assert_eq!(
@@ -230,7 +233,7 @@ fn replication() {
 }
 
 #[test]
-fn server_event() {
+fn server_message() {
     let mut server_app = App::new();
     let mut client_app = App::new();
     for app in [&mut server_app, &mut client_app] {
@@ -243,26 +246,26 @@ fn server_event() {
             }),
             RepliconRenetPlugins,
         ))
-        .add_server_event::<TestEvent>(Channel::Ordered)
+        .add_server_message::<Test>(Channel::Ordered)
         .finish();
     }
 
     setup(&mut server_app, &mut client_app);
 
-    server_app.world_mut().send_event(ToClients {
+    server_app.world_mut().write_message(ToClients {
         mode: SendMode::Broadcast,
-        event: TestEvent,
+        message: Test,
     });
 
     server_app.update();
     client_app.update();
 
-    let events = client_app.world().resource::<Events<TestEvent>>();
-    assert_eq!(events.len(), 1);
+    let messages = client_app.world().resource::<Messages<Test>>();
+    assert_eq!(messages.len(), 1);
 }
 
 #[test]
-fn client_event() {
+fn client_message() {
     let mut server_app = App::new();
     let mut client_app = App::new();
     for app in [&mut server_app, &mut client_app] {
@@ -275,21 +278,19 @@ fn client_event() {
             }),
             RepliconRenetPlugins,
         ))
-        .add_client_event::<TestEvent>(Channel::Ordered)
+        .add_client_message::<Test>(Channel::Ordered)
         .finish();
     }
 
     setup(&mut server_app, &mut client_app);
 
-    client_app.world_mut().send_event(TestEvent);
+    client_app.world_mut().write_message(Test);
 
     client_app.update();
     server_app.update();
 
-    let client_events = server_app
-        .world()
-        .resource::<Events<FromClient<TestEvent>>>();
-    assert_eq!(client_events.len(), 1);
+    let client_messages = server_app.world().resource::<Messages<FromClient<Test>>>();
+    assert_eq!(client_messages.len(), 1);
 }
 
 fn setup(server_app: &mut App, client_app: &mut App) {
@@ -383,5 +384,5 @@ fn wait_for_connection(server_app: &mut App, client_app: &mut App) {
     }
 }
 
-#[derive(Deserialize, Event, Serialize)]
-struct TestEvent;
+#[derive(Message, Serialize, Deserialize)]
+struct Test;

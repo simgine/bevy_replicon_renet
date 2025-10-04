@@ -61,7 +61,7 @@ fn set_stopped(mut state: ResMut<NextState<ServerState>>) {
 
 fn process_server_events(
     mut commands: Commands,
-    mut server_events: EventReader<ServerEvent>,
+    mut server_events: MessageReader<ServerEvent>,
     network_map: Res<NetworkIdMap>,
 ) {
     for event in server_events.read() {
@@ -137,25 +137,26 @@ fn send_packets(
 
 fn disconnect_by_request(
     mut commands: Commands,
-    mut disconnect_events: EventReader<DisconnectRequest>,
+    mut disconnects: MessageReader<DisconnectRequest>,
 ) {
-    for event in disconnect_events.read() {
-        debug!("despawning client `{}` by disconnect request", event.client);
-        commands.entity(event.client).despawn();
+    for disconnect in disconnects.read() {
+        debug!(
+            "despawning client `{}` by disconnect request",
+            disconnect.client
+        );
+        commands.entity(disconnect.client).despawn();
     }
 }
 
 fn disconnect_client(
-    trigger: Trigger<OnRemove, ConnectedClient>,
+    remove: On<Remove, ConnectedClient>,
     server: Option<ResMut<RenetServer>>,
     clients: Query<&NetworkId>,
 ) {
     if let Some(mut server) = server {
-        debug!("disconnecting despawned client `{}`", trigger.target());
+        debug!("disconnecting despawned client `{}`", remove.entity);
 
-        let network_id = clients
-            .get(trigger.target())
-            .expect("inserted on connection");
+        let network_id = clients.get(remove.entity).expect("inserted on connection");
         server.disconnect(network_id.get());
     }
 }
