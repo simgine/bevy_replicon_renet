@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Handle jumping between `ClientState::Connected` states.
+
 ## [0.11.1] - 2025-10-04
 
 ### Fixed
