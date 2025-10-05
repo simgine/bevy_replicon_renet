@@ -20,11 +20,12 @@ impl Plugin for RepliconRenetClientPlugin {
             .add_systems(
                 PreUpdate,
                 (
-                    (
-                        set_connecting.run_if(resource_added::<RenetClient>),
-                        set_connected.run_if(bevy_renet::client_just_connected),
-                    )
-                        .chain(), // Make connected take precedence if the inserted resource is already connected.
+                    set_connecting.run_if(resource_added::<RenetClient>),
+                    set_connected.run_if(
+                        // Ensure we transition from "connecting" to "connected,"
+                        // even if the transport reports "connected" right away.
+                        in_state(ClientState::Connecting).and(bevy_renet::client_connected),
+                    ),
                     set_disconnected.run_if(bevy_renet::client_just_disconnected),
                     receive_packets.run_if(bevy_renet::client_connected),
                 )
