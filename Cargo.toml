@@ -25,7 +25,7 @@ rustdoc-args = ["-Zunstable-options", "--cfg", "docsrs"]
 all-features = true
 
 [dependencies]
-bevy_replicon = { version = "0.35", default-features = false }
+bevy_replicon = { version = "0.36", default-features = false }
 bevy_renet = { version = "2.0", default-features = false }
 bevy = { version = "0.16", default-features = false, features = ["bevy_log"] }
 
