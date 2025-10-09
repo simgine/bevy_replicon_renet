@@ -86,7 +86,7 @@ and [`RenetClient`](renet::RenetServer) in [`PreUpdate`].
 This means that states won't be updated in schedules like [`Startup`].
 As a workaround, you can directly check if Renet's resources are present.
 */
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "client")]
 mod client;
