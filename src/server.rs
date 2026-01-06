@@ -4,8 +4,7 @@ use bevy_renet::netcode::NetcodeServerPlugin;
 #[cfg(feature = "renet_steam")]
 use bevy_renet::steam::SteamServerPlugin;
 use bevy_renet::{
-    RenetReceive, RenetSend, RenetServerPlugin,
-    renet::{RenetServer, ServerEvent},
+    RenetReceive, RenetSend, RenetServer, RenetServerEvent, RenetServerPlugin, renet::ServerEvent,
 };
 use bevy_replicon::{
     prelude::*,
@@ -23,13 +22,14 @@ impl Plugin for RepliconRenetServerPlugin {
         app.add_plugins(RenetServerPlugin)
             .configure_sets(PreUpdate, ServerSystems::ReceivePackets.after(RenetReceive))
             .configure_sets(PostUpdate, ServerSystems::SendPackets.before(RenetSend))
+            .add_observer(process_server_events)
             .add_observer(disconnect_client)
             .add_systems(
                 PreUpdate,
                 (
                     set_running.run_if(resource_added::<RenetServer>),
                     set_stopped.run_if(resource_removed::<RenetServer>),
-                    (receive_packets, process_server_events).run_if(resource_exists::<RenetServer>),
+                    receive_packets.run_if(resource_exists::<RenetServer>),
                 )
                     .in_set(ServerSystems::ReceivePackets),
             )
@@ -60,32 +60,30 @@ fn set_stopped(mut state: ResMut<NextState<ServerState>>) {
 }
 
 fn process_server_events(
+    server_event: On<RenetServerEvent>,
     mut commands: Commands,
-    mut server_events: MessageReader<ServerEvent>,
     network_map: Res<NetworkIdMap>,
 ) {
-    for event in server_events.read() {
-        match event {
-            ServerEvent::ClientConnected { client_id } => {
-                let network_id = NetworkId::new(*client_id);
-                let client_entity = commands
-                    .spawn((
-                        ConnectedClient {
-                            // From https://github.com/lucaspoffo/renet/blob/master/renet/src/packet.rs#L7
-                            max_size: 1200,
-                        },
-                        network_id,
-                    ))
-                    .id();
-                debug!("spawning client `{client_entity}` with `{network_id:?}`");
-            }
-            ServerEvent::ClientDisconnected { client_id, reason } => {
-                let network_id = NetworkId::new(*client_id);
-                if let Some(&client_entity) = network_map.get(&network_id) {
-                    // Entity could have been despawned by user.
-                    commands.entity(client_entity).despawn();
-                    debug!("despawning client `{client_entity}` with `{network_id:?}`: {reason}");
-                }
+    match **server_event {
+        ServerEvent::ClientConnected { client_id } => {
+            let network_id = NetworkId::new(client_id);
+            let client_entity = commands
+                .spawn((
+                    ConnectedClient {
+                        // From https://github.com/lucaspoffo/renet/blob/master/renet/src/packet.rs#L7
+                        max_size: 1200,
+                    },
+                    network_id,
+                ))
+                .id();
+            debug!("spawning client `{client_entity}` with `{network_id:?}`");
+        }
+        ServerEvent::ClientDisconnected { client_id, reason } => {
+            let network_id = NetworkId::new(client_id);
+            if let Some(&client_entity) = network_map.get(&network_id) {
+                // Entity could have been despawned by user.
+                commands.entity(client_entity).despawn();
+                debug!("despawning client `{client_entity}` with `{network_id:?}`: {reason}");
             }
         }
     }

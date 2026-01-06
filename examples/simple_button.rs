@@ -10,12 +10,12 @@ use std::{
 use bevy::{ecs::entity::MapEntities, prelude::*};
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet::{
-    RenetChannelsExt, RepliconRenetPlugins,
+    RenetChannelsExt, RenetClient, RenetServer, RepliconRenetPlugins,
     netcode::{
         ClientAuthentication, NetcodeClientTransport, NetcodeServerTransport, ServerAuthentication,
         ServerConfig,
     },
-    renet::{ConnectionConfig, RenetClient, RenetServer},
+    renet::ConnectionConfig,
 };
 use clap::Parser;
 use serde::{Deserialize, Serialize};
