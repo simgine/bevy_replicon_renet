@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy_renet::netcode::NetcodeClientPlugin;
 #[cfg(feature = "renet_steam")]
 use bevy_renet::steam::SteamClientPlugin;
-use bevy_renet::{self, RenetClientPlugin, RenetReceive, RenetSend, renet::RenetClient};
+use bevy_renet::{self, RenetClient, RenetClientPlugin, RenetReceive, RenetSend};
 use bevy_replicon::prelude::*;
 
 /// Adds Renet as the client messaging backend.

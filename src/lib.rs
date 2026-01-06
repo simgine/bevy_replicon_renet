@@ -95,11 +95,7 @@ mod server;
 
 use std::time::Duration;
 
-#[cfg(feature = "renet_netcode")]
-pub use bevy_renet::netcode;
-pub use bevy_renet::renet;
-#[cfg(feature = "renet_steam")]
-pub use bevy_renet::steam;
+pub use bevy_renet::*;
 
 #[cfg(feature = "client")]
 pub use client::RepliconRenetClientPlugin;

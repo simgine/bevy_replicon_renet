@@ -5,11 +5,12 @@ use std::{
 
 use bevy::{ecs::schedule::ScheduleLabel, prelude::*, state::app::StatesPlugin};
 use bevy_renet::{
+    RenetClient, RenetServer,
     netcode::{
         ClientAuthentication, NetcodeClientTransport, NetcodeServerTransport, ServerAuthentication,
         ServerConfig,
     },
-    renet::{ConnectionConfig, RenetClient, RenetServer},
+    renet::ConnectionConfig,
 };
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet::{RenetChannelsExt, RepliconRenetPlugins};

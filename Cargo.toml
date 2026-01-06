@@ -25,20 +25,21 @@ rustdoc-args = ["-Zunstable-options", "--cfg", "docsrs"]
 all-features = true
 
 [dependencies]
-bevy_replicon = { version = "0.37", default-features = false }
-bevy_renet = { version = "3.0", default-features = false }
-bevy = { version = "0.17", default-features = false, features = ["bevy_log"] }
+bevy_replicon = { version = "0.38.0-rc.1", default-features = false }
+bevy_renet = { git = "https://github.com/simgine/renet", branch = "bevy-0.18", default-features = false }
+bevy = { version = "0.18.0-rc.1", default-features = false, features = ["bevy_log"] }
 
 [dev-dependencies]
-bevy = { version = "0.17", default-features = false, features = [
+bevy = { version = "0.18.0-rc.1", default-features = false, features = [
   "bevy_gizmos",
   "bevy_state",
   "bevy_text",
-  "bevy_ui_picking_backend",
   "bevy_ui_render",
   "bevy_window",
   "default_font",
+  "gamepad", # TODO: remove after the next Bevy RC (`bevy_input_focus` didn't set the dependency on `bevy_input` properly).
   "serialize",
+  "ui_picking",
   "x11",
 ] }
 clap = { version = "4.1", features = ["derive"] }
