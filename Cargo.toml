@@ -27,10 +27,10 @@ all-features = true
 [dependencies]
 bevy_replicon = { version = "0.37", default-features = false }
 bevy_renet = { version = "3.0", default-features = false }
-bevy = { version = "0.17", default-features = false, features = ["bevy_log"] }
+bevy = { version = "0.18", default-features = false, features = ["bevy_log"] }
 
 [dev-dependencies]
-bevy = { version = "0.17", default-features = false, features = [
+bevy = { version = "0.18", default-features = false, features = [
   "bevy_gizmos",
   "bevy_state",
   "bevy_text",
