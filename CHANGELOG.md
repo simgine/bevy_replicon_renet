@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.14.0] - 2026-01-20
 
 - Update to `bevy_replicon` 0.38.
+- Update to `bevy_renet` 4.0.
 
 ## [0.13.0] - 2025-12-03
 
