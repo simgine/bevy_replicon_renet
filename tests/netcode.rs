@@ -184,7 +184,7 @@ fn server_stop() {
     let messages = client_app.world().resource::<Messages<Test>>();
     assert!(
         messages.is_empty(),
-        "message after stop shouldn't be received"
+        "message shouldn't be received after stop"
     );
 
     let mut replicated = client_app.world_mut().query::<&Replicated>();
@@ -271,8 +271,8 @@ fn client_message() {
     client_app.update();
     server_app.update();
 
-    let client_messages = server_app.world().resource::<Messages<FromClient<Test>>>();
-    assert_eq!(client_messages.len(), 1);
+    let messages = server_app.world().resource::<Messages<FromClient<Test>>>();
+    assert_eq!(messages.len(), 1);
 }
 
 fn setup(server_app: &mut App, client_app: &mut App) {
