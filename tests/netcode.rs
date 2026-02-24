@@ -3,7 +3,7 @@ use std::{
     time::SystemTime,
 };
 
-use bevy::{ecs::schedule::ScheduleLabel, prelude::*, state::app::StatesPlugin};
+use bevy::{prelude::*, state::app::StatesPlugin};
 use bevy_renet::{
     RenetClient, RenetServer,
     netcode::{
@@ -25,10 +25,7 @@ fn connect_disconnect() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
             RepliconRenetPlugins,
         ))
         .finish();
@@ -75,10 +72,7 @@ fn disconnect_request() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
             RepliconRenetPlugins,
         ))
         .add_server_message::<Test>(Channel::Ordered)
@@ -137,11 +131,7 @@ fn server_stop() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
-            RepliconRenetPlugins,
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
         ))
         .add_server_message::<Test>(Channel::Ordered)
         .finish();
@@ -213,10 +203,7 @@ fn replication() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
             RepliconRenetPlugins,
         ))
         .finish();
@@ -241,10 +228,7 @@ fn server_message() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
             RepliconRenetPlugins,
         ))
         .add_server_message::<Test>(Channel::Ordered)
@@ -273,10 +257,7 @@ fn client_message() {
         app.add_plugins((
             MinimalPlugins,
             StatesPlugin,
-            RepliconPlugins.set(ServerPlugin {
-                tick_schedule: PostUpdate.intern(),
-                ..Default::default()
-            }),
+            RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
             RepliconRenetPlugins,
         ))
         .add_client_message::<Test>(Channel::Ordered)
