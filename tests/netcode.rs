@@ -132,6 +132,7 @@ fn server_stop() {
             MinimalPlugins,
             StatesPlugin,
             RepliconPlugins.set(ServerPlugin::new(PostUpdate)),
+            RepliconRenetPlugins,
         ))
         .add_server_message::<Test>(Channel::Ordered)
         .finish();
