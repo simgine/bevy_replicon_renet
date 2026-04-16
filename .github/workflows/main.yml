@@ -59,7 +59,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Run Clippy
-        run: cargo clippy --tests --examples -- -D warnings
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Check docs
         run: cargo rustdoc -- -D warnings
