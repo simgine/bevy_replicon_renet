@@ -1,6 +1,6 @@
 [package]
 name = "bevy_replicon_renet"
-version = "0.15.0"
+version = "0.16.0"
 authors = [
   "Hennadii Chernyshchyk <genaloner@gmail.com>",
   "koe <ukoe@protonmail.com>",
@@ -25,12 +25,12 @@ rustdoc-args = ["-Zunstable-options", "--cfg", "docsrs"]
 all-features = true
 
 [dependencies]
-bevy_replicon = { git = "https://github.com/simgine/bevy_replicon", branch = "bevy-0.19", default-features = false }
+bevy_replicon = { version = "0.41.0-rc.1", default-features = false }
 bevy_renet = { git = "https://github.com/simgine/renet", branch = "bevy-0.19", default-features = false }
-bevy = { git = "https://github.com/cart/bevy", branch = "next-generation-scenes", default-features = false, features = ["bevy_log"] }
+bevy = { version = "0.19.0-rc.1", default-features = false, features = ["bevy_log"] }
 
 [dev-dependencies]
-bevy = { git = "https://github.com/cart/bevy", branch = "next-generation-scenes", default-features = false, features = [
+bevy = { version = "0.19.0-rc.1", default-features = false, features = [
   "bevy_gizmos",
   "bevy_state",
   "bevy_text",
