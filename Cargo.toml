@@ -31,7 +31,7 @@ bevy = { version = "0.19", default-features = false, features = ["bevy_log"] }
 
 [dev-dependencies]
 bevy = { version = "0.19", default-features = false, features = [
-  "bevy_gizmos",
+  "bevy_gizmos_render",
   "bevy_state",
   "bevy_text",
   "bevy_ui_render",
