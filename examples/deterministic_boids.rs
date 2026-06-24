@@ -91,7 +91,7 @@ fn setup(mut commands: Commands, cli: Res<Cli>, channels: Res<RepliconChannels>)
             commands.spawn((
                 Text::new("Server"),
                 TextFont {
-                    font_size: 30.0,
+                    font_size: FontSize::Px(30.0),
                     ..Default::default()
                 },
                 TextColor::WHITE,
@@ -130,7 +130,7 @@ fn setup(mut commands: Commands, cli: Res<Cli>, channels: Res<RepliconChannels>)
             commands.spawn((
                 Text(format!("Client: {addr}")),
                 TextFont {
-                    font_size: 30.0,
+                    font_size: FontSize::Px(30.0),
                     ..default()
                 },
                 TextColor::WHITE,
@@ -161,6 +161,7 @@ fn spawn_boids(commands: &mut Commands) {
 
         commands.spawn((
             Boid { color, group },
+            Replicated,
             Bias(bias),
             Velocity(velocity),
             Transform {
@@ -329,7 +330,7 @@ impl Default for Cli {
 }
 
 #[derive(Component, Serialize, Deserialize)]
-#[require(Replicated, Mesh2d, MeshMaterial2d<ColorMaterial>)]
+#[require(Mesh2d, MeshMaterial2d<ColorMaterial>)]
 #[component(immutable)]
 struct Boid {
     color: Color,

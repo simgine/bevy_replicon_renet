@@ -72,7 +72,11 @@ fn setup(mut commands: Commands, cli: Res<Cli>, channels: Res<RepliconChannels>)
             commands.insert_resource(server);
             commands.insert_resource(transport);
 
-            commands.spawn((UiRoot, children![ToggleButton(false)]));
+            commands.spawn((
+                UiRoot,
+                Replicated,
+                children![(ToggleButton(false), Replicated)],
+            ));
             commands.spawn(Text::new("Server"));
         }
         Cli::Client { ip, port } => {
@@ -117,7 +121,7 @@ fn init_toggle_button(add: On<Add, ToggleButton>, mut commands: Commands) {
         Text::default(),
         TextShadow::default(),
         TextFont {
-            font_size: 30.0,
+            font_size: FontSize::Px(30.0),
             ..Default::default()
         },
     ));
@@ -220,7 +224,6 @@ impl Default for Cli {
 /// this component is spawned) and the client (when the entity with this component is replicated).
 #[derive(Component, Serialize, Deserialize)]
 #[require(
-    Replicated,
     Node {
         width: Val::Percent(100.0),
         height: Val::Percent(100.0),
@@ -240,7 +243,6 @@ struct UiRoot;
 /// See <https://github.com/bevyengine/bevy/issues/19776> for more details.
 #[derive(Component, Serialize, Deserialize, Deref, DerefMut, Clone, Copy)]
 #[require(
-    Replicated,
     Button,
     Node {
         width: Val::Px(150.0),
