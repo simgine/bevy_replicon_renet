@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-08-08
+
+### Changed
+
+- Update to `bevy_replicon` 0.42.
+
 ## [0.17.0] - 2026-06-24
 
 ### Changed
@@ -144,7 +150,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 First release after I/O abstraction.
 
-[unreleased]: https://github.com/simgine/bevy_replicon_renet/compare/v0.17.0...HEAD
+[unreleased]: https://github.com/simgine/bevy_replicon_renet/compare/v0.18.0...HEAD
+[0.18.0]: https://github.com/simgine/bevy_replicon_renet/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/simgine/bevy_replicon_renet/compare/v0.16.0...v0.17.0
 [0.16.0]: https://github.com/simgine/bevy_replicon_renet/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/simgine/bevy_replicon_renet/compare/v0.14.0...v0.15.0
