@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Update to `bevy_replicon` 0.43.
+
 ## [0.18.0] - 2026-08-08
 
 ### Changed
