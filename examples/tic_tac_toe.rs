@@ -9,7 +9,10 @@ use std::{
 
 use bevy::{
     ecs::{relationship::RelatedSpawner, spawn::SpawnWith},
+    picking::hover::Hovered,
     prelude::*,
+    ui::Pressed,
+    ui_widgets::Button,
 };
 use bevy_replicon::prelude::*;
 use bevy_replicon_renet::{
@@ -304,7 +307,7 @@ fn hide_reset_button(mut reset_button_visibility: Single<&mut Visibility, With<R
 ///
 /// We don't just send mouse clicks to save traffic, they contain a lot of extra information.
 fn pick_cell(
-    click: On<Pointer<Click>>,
+    click: On<PointerClick>,
     mut commands: Commands,
     turn_symbol: Res<TurnSymbol>,
     game_state: Res<State<GameState>>,
@@ -362,7 +365,7 @@ fn apply_pick(
 
 /// Initializes spawned symbol on client after replication and on server / single-player right after the spawn.
 fn init_symbol(
-    add: On<Add, Symbol>,
+    add: On<Add<Symbol>>,
     mut commands: Commands,
     symbol_font: Res<SymbolFont>,
     mut cells: Query<(&mut BackgroundColor, &Symbol), With<Button>>,
@@ -374,7 +377,7 @@ fn init_symbol(
 
     commands
         .entity(add.entity)
-        .remove::<Interaction>()
+        .remove::<(Pressed, Hovered)>()
         .with_child((
             Text::new(symbol.glyph()),
             TextFont {
@@ -387,10 +390,10 @@ fn init_symbol(
 }
 
 /// Removes symbol's underlying ui elements and adds interaction back to reset to an empty cell.
-fn deinit_symbol(remove: On<Remove, Symbol>, mut commands: Commands) {
+fn deinit_symbol(remove: On<Remove<Symbol>>, mut commands: Commands) {
     commands
         .entity(remove.entity)
-        .insert(Interaction::None)
+        .remove::<(Pressed, Hovered)>()
         .despawn_children();
 }
 
@@ -405,7 +408,7 @@ fn client_start(mut commands: Commands) {
 ///
 /// Used only for server.
 fn init_client(
-    add: On<Add, AuthorizedClient>,
+    add: On<Add<AuthorizedClient>>,
     mut commands: Commands,
     server_symbol: Single<&Symbol, With<LocalPlayer>>,
 ) {
@@ -421,7 +424,7 @@ fn init_client(
 ///
 /// Runs on singleplayer, server, client.
 fn request_reset_game(
-    click: On<Pointer<Click>>,
+    click: On<PointerClick>,
     reset_button: Single<Entity, With<ResetButton>>,
     mut commands: Commands,
 ) {
@@ -472,7 +475,7 @@ fn restart_game(_on: On<RestartGame>, mut commands: Commands) {
 ///
 /// Used only for server.
 fn disconnect_by_client(
-    _on: On<Remove, ConnectedClient>,
+    _on: On<Remove<ConnectedClient>>,
     game_state: Res<State<GameState>>,
     mut commands: Commands,
 ) {
@@ -498,7 +501,7 @@ fn stop_networking(mut commands: Commands) {
 
 /// Checks the winner and advances the turn.
 fn advance_turn(
-    _on: On<Add, Symbol>,
+    _on: On<Add<Symbol>>,
     mut commands: Commands,
     mut turn_symbol: ResMut<TurnSymbol>,
     symbols: Query<(&Cell, &Symbol)>,
@@ -537,16 +540,16 @@ fn advance_turn(
 }
 
 fn update_buttons_background(
-    mut buttons: Query<(&Interaction, &mut BackgroundColor), Changed<Interaction>>,
+    mut buttons: Query<(Has<Pressed>, Has<Hovered>, &mut BackgroundColor), With<Button>>,
 ) {
     const HOVER_COLOR: Color = Color::srgb(0.85, 0.85, 0.85);
     const PRESS_COLOR: Color = Color::srgb(0.95, 0.95, 0.95);
 
-    for (interaction, mut background) in &mut buttons {
-        match interaction {
-            Interaction::Pressed => *background = PRESS_COLOR.into(),
-            Interaction::Hovered => *background = HOVER_COLOR.into(),
-            Interaction::None => *background = BACKGROUND_COLOR.into(),
+    for (pressed, hovered, mut background) in &mut buttons {
+        match (pressed, hovered) {
+            (true, _) => *background = PRESS_COLOR.into(),
+            (false, true) => *background = HOVER_COLOR.into(),
+            (false, false) => *background = BACKGROUND_COLOR.into(),
         };
     }
 }

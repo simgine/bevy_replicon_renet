@@ -25,16 +25,17 @@ rustdoc-args = ["-Zunstable-options", "--cfg", "docsrs"]
 all-features = true
 
 [dependencies]
-bevy_replicon = { version = "0.44", default-features = false }
-bevy_renet = { version = "5.0", default-features = false }
-bevy = { version = "0.19", default-features = false, features = ["bevy_log"] }
+bevy_replicon = { version = "0.45", default-features = false }
+bevy_renet = { git = "https://github.com/simgine/renet", branch = "bevy-0.20", default-features = false }
+bevy = { version = "0.20", default-features = false, features = ["bevy_log"] }
 
 [dev-dependencies]
-bevy = { version = "0.19", default-features = false, features = [
+bevy = { version = "0.20", default-features = false, features = [
   "bevy_gizmos_render",
   "bevy_state",
   "bevy_text",
   "bevy_ui_render",
+  "bevy_ui_widgets",
   "bevy_window",
   "default_font",
   "serialize",
